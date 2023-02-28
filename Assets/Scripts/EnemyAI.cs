@@ -15,6 +15,7 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] GameObject patrolPointTwo;
     [SerializeField] GameObject patrolPointThree;
     [SerializeField] GameObject patrolPointFour;
+    [SerializeField] GameObject enemyHomeBase;
     [SerializeField] Material patrolMaterial;
     [SerializeField] Material attackMaterial;
     [SerializeField] Material chaseMaterial;
@@ -54,23 +55,17 @@ public class EnemyAI : MonoBehaviour
 
     public void EnemyUpdate()
     {
-        StateUpdate();                  //updates the enemy state
-        SpeedUpdate();                  //sets enemy speed based on state
+        StateUpdate();                  //updates the enemy state        
         StateProceed();                 //enemy actions proceed based on state and speed
     }
-
-    private void SpeedUpdate()
-    {
-        
-    }
-
+    
     public void StateUpdate()           // compares enemy distance to player and sets the state    
     {
         GetEnemyToPlayerDistance();     // gets the distance between the enemy and the player
         switch (enemyToPlayerDistance)
         {
             case > 25:
-            enemystate  = EnemyState.patrolling;    //sets the enemy state to patrolling
+            enemystate = EnemyState.patrolling;    //sets the enemy state to patrolling
             enemy.GetComponent<MeshRenderer>().material = patrolMaterial;   //sets the enemy material to the patrol material
             break;
             case > 20:
@@ -95,10 +90,10 @@ public class EnemyAI : MonoBehaviour
     }
     private void StateProceed()         // enemy ai will proceed based on current state
     {
-
         switch (enemystate)             // utilizes the distance between enemy and player to determine state
         {
             case EnemyState.patrolling:
+            enemy.isStopped = false;
                 switch (patrolRounds)
                 {
                     case PatrolRounds.pointOne:
@@ -134,12 +129,24 @@ public class EnemyAI : MonoBehaviour
                 }
             break;
             case EnemyState.chasing:
+            enemy.destination = playerPOS;
+            oldPlayerPOS = playerPOS;
+            enemy.isStopped = false;
             break;
             case EnemyState.searching:
+            enemy.destination = oldPlayerPOS;
+            enemy.isStopped = false;
             break;
             case EnemyState.attacking:
+            enemy.isStopped = true;
             break;
             case EnemyState.retreating:
+            enemy.destination = enemyHomeBase.transform.position;
+            enemy.isStopped = false;
+            if (Vector3.Distance(enemyPOS, enemyHomeBase.transform.position) < 5)
+            {                
+                enemystate = EnemyState.patrolling;
+            }
             break;
             default:
             break;
