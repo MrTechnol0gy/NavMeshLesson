@@ -8,13 +8,18 @@ public class EnemyAI : MonoBehaviour
     public NavMeshAgent enemy;    
     private GameObject playerAgent;
     private Vector3 playerPOS;
+    private Vector3 oldPlayerPOS;
     private Vector3 enemyPOS;
-    private float enemyToPlayerDistance;
-
+    private float enemyToPlayerDistance; 
     [SerializeField] GameObject patrolPointOne;
     [SerializeField] GameObject patrolPointTwo;
     [SerializeField] GameObject patrolPointThree;
     [SerializeField] GameObject patrolPointFour;
+    [SerializeField] Material patrolMaterial;
+    [SerializeField] Material attackMaterial;
+    [SerializeField] Material chaseMaterial;
+    [SerializeField] Material retreatMaterial;
+    [SerializeField] Material searchMaterial;
     
     enum EnemyState
     {
@@ -49,13 +54,44 @@ public class EnemyAI : MonoBehaviour
 
     public void EnemyUpdate()
     {
-        StateUpdate();
-        StateProceed();             
+        StateUpdate();                  //updates the enemy state
+        SpeedUpdate();                  //sets enemy speed based on state
+        StateProceed();                 //enemy actions proceed based on state and speed
+    }
+
+    private void SpeedUpdate()
+    {
+        
     }
 
     public void StateUpdate()           // compares enemy distance to player and sets the state    
     {
         GetEnemyToPlayerDistance();     // gets the distance between the enemy and the player
+        switch (enemyToPlayerDistance)
+        {
+            case > 25:
+            enemystate  = EnemyState.patrolling;    //sets the enemy state to patrolling
+            enemy.GetComponent<MeshRenderer>().material = patrolMaterial;   //sets the enemy material to the patrol material
+            break;
+            case > 20:
+            enemystate = EnemyState.searching;
+            enemy.GetComponent<MeshRenderer>().material = searchMaterial;
+            break;
+            case > 15:
+            enemystate = EnemyState.chasing;
+            enemy.GetComponent<MeshRenderer>().material = chaseMaterial;
+            break;
+            case >= 10:
+            enemystate = EnemyState.attacking;
+            enemy.GetComponent<MeshRenderer>().material = attackMaterial;
+            break;
+            case < 10:
+            enemystate = EnemyState.retreating;
+            enemy.GetComponent<MeshRenderer>().material = retreatMaterial;
+            break;
+            default:
+            break;
+        }
     }
     private void StateProceed()         // enemy ai will proceed based on current state
     {

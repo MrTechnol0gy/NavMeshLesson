@@ -3562,6 +3562,11 @@ MonoBehaviour:
   patrolPointTwo: {fileID: 1784264982}
   patrolPointThree: {fileID: 1450320055}
   patrolPointFour: {fileID: 920432200}
+  patrolMaterial: {fileID: 2100000, guid: f61803abda7cb104d99a8061d77b8e72, type: 2}
+  attackMaterial: {fileID: 2100000, guid: f8635bfe7ef1643419f855786abbfd13, type: 2}
+  chaseMaterial: {fileID: 2100000, guid: 0dcdadda5a5decd4ba443f689e3dc41c, type: 2}
+  retreatMaterial: {fileID: 2100000, guid: d7ce857d64cfb4540a63f1c60aeb4ae0, type: 2}
+  searchMaterial: {fileID: 2100000, guid: bc3b17865dd508448beea203295b90a6, type: 2}
 --- !u!195 &1415507448
 NavMeshAgent:
   m_ObjectHideFlags: 0
