@@ -49,6 +49,7 @@ public class EnemyAI : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {   
+        GetEnemyToPlayerDistance();     // gets the distance between the enemy and the player
         EnemyUpdate();
         Debug.Log("Distance to player is: " + enemyToPlayerDistance);
     }
@@ -59,31 +60,48 @@ public class EnemyAI : MonoBehaviour
         StateProceed();                 //enemy actions proceed based on state and speed
     }
     
-    public void StateUpdate()           // compares enemy distance to player and sets the state    
-    {
-        GetEnemyToPlayerDistance();     // gets the distance between the enemy and the player
-        switch (enemyToPlayerDistance)
+    public void StateUpdate()           // checks for conditions that would cause the enemy state to update
+    {        
+        switch (enemystate)
         {
-            case > 25:
-            enemystate = EnemyState.patrolling;    //sets the enemy state to patrolling
-            enemy.GetComponent<MeshRenderer>().material = patrolMaterial;   //sets the enemy material to the patrol material
-            break;
-            case > 20:
-            enemystate = EnemyState.searching;
-            enemy.GetComponent<MeshRenderer>().material = searchMaterial;
-            break;
-            case > 15:
-            enemystate = EnemyState.chasing;
-            enemy.GetComponent<MeshRenderer>().material = chaseMaterial;
-            break;
-            case >= 10:
-            enemystate = EnemyState.attacking;
-            enemy.GetComponent<MeshRenderer>().material = attackMaterial;
-            break;
-            case < 10:
-            enemystate = EnemyState.retreating;
-            enemy.GetComponent<MeshRenderer>().material = retreatMaterial;
-            break;
+            case EnemyState.patrolling:
+            
+                enemy.GetComponent<MeshRenderer>().material = patrolMaterial;   //sets the enemy material to the patrol material
+                if (enemyToPlayerDistance < 25)
+                {
+                    enemystate = EnemyState.chasing;
+                }
+                break;
+            case EnemyState.searching:            
+                enemy.GetComponent<MeshRenderer>().material = searchMaterial;
+                //should go to chasing or patrolling based on raycast
+                break;
+            case EnemyState.chasing:            
+                enemy.GetComponent<MeshRenderer>().material = chaseMaterial;
+                if (enemyToPlayerDistance > 5 && enemyToPlayerDistance < 10)
+                {
+                    enemystate = EnemyState.attacking;
+                }                
+                //needs another condition to go to searching based on raycast
+                break;
+            case EnemyState.attacking:            
+                enemy.GetComponent<MeshRenderer>().material = attackMaterial;
+                if (enemyToPlayerDistance < 5)
+                {
+                    enemystate = EnemyState.retreating;
+                }
+                else if (enemyToPlayerDistance > 15)
+                {
+                    enemystate = EnemyState.chasing;
+                }
+                break;
+            case EnemyState.retreating:            
+                enemy.GetComponent<MeshRenderer>().material = retreatMaterial;
+                if ((Vector3.Distance(enemyPOS, enemyHomeBase.transform.position) < 5))
+                {
+                    enemystate = EnemyState.patrolling;
+                }
+                break;
             default:
             break;
         }
