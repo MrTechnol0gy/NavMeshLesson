@@ -75,7 +75,7 @@ public class EnemyAI : MonoBehaviour
                 TargetVisibleCheck();                                           // checks to see if the player is currently visible
                 if (playerVisible)                                              // if the player is within range and visible the enemy will move to chasing state
                 {
-                    enemystate = EnemyState.chasing;                    
+                    enemystate = EnemyState.chasing;
                 }
                 else
                 {
@@ -230,7 +230,7 @@ public class EnemyAI : MonoBehaviour
             wallHit = false;
             Debug.Log("wall has not been hit.");
 
-            if (playerCollider.Raycast(ray, out hitData, distantProximity))
+            if (playerCollider.Raycast(ray, out hitData, distantProximity))         // checks for the player's visibility within "sight" range
             {
                 playerVisible = true;
                 Debug.Log("Player is visible.");
