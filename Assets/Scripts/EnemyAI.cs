@@ -57,7 +57,7 @@ public class EnemyAI : MonoBehaviour
     {   
         GetEnemyToPlayerDistance();     // gets the distance between the enemy and the player
         EnemyUpdate();
-        Debug.Log("Distance to player is: " + enemyToPlayerDistance);
+        //Debug.Log("Distance to player is: " + enemyToPlayerDistance);
     }
 
     public void EnemyUpdate()
