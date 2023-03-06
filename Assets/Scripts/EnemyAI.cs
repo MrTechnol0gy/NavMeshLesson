@@ -21,12 +21,13 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] GameObject patrolPointTwo;
     [SerializeField] GameObject patrolPointThree;
     [SerializeField] GameObject patrolPointFour;
-    [SerializeField] GameObject enemyHomeBase;
     [SerializeField] Material patrolMaterial;
     [SerializeField] Material attackMaterial;
     [SerializeField] Material chaseMaterial;
     [SerializeField] Material retreatMaterial;
     [SerializeField] Material searchMaterial;
+    public GameObject[] patrolPoints;
+    public GameObject[] enemyHomeBase;
     
     enum EnemyState
     {
@@ -47,10 +48,12 @@ public class EnemyAI : MonoBehaviour
 
     static EnemyState enemystate = EnemyState.patrolling;       //sets the starting enemy state
     static PatrolRounds patrolRounds = PatrolRounds.pointOne;   //sets the starting enemy patrol location
-
     void Start()
     {
-        playerAgent = GameObject.FindGameObjectWithTag("Player"); //gets the player gameobject        
+        playerAgent = GameObject.FindGameObjectWithTag("Player"); //gets the player gameobject
+        patrolPoints = GameObject.FindGameObjectsWithTag("PatrolPoint"); //gets all patrol points
+        enemyHomeBase = GameObject.FindGameObjectsWithTag("EnemyBase"); //gets the enemy home base
+        AssignPatrolPoints(); // assigns patrol points to relevant enums/variables.        
     }
     
     void FixedUpdate()
@@ -136,7 +139,7 @@ public class EnemyAI : MonoBehaviour
                 break;
             case EnemyState.retreating:            
                 enemy.GetComponent<MeshRenderer>().material = retreatMaterial;
-                if ((Vector3.Distance(enemyPOS, enemyHomeBase.transform.position) < closeProximity))
+                if ((Vector3.Distance(enemyPOS, enemyHomeBase[0].transform.position) < closeProximity))
                 {
                     enemystate = EnemyState.patrolling;
                 }                
@@ -198,7 +201,7 @@ public class EnemyAI : MonoBehaviour
                 enemy.isStopped = true;
                 break;
             case EnemyState.retreating:
-                enemy.destination = enemyHomeBase.transform.position;
+                enemy.destination = enemyHomeBase[0].transform.position;
                 enemy.isStopped = false;
                 break;
             default:
@@ -241,5 +244,13 @@ public class EnemyAI : MonoBehaviour
                 Debug.Log("Player is not visible.");
             }
         }
+    }
+
+    private void AssignPatrolPoints()
+    {
+        patrolPointOne = patrolPoints[0];
+        patrolPointTwo = patrolPoints[1];
+        patrolPointThree = patrolPoints[2];
+        patrolPointFour = patrolPoints[3];
     }
 }
