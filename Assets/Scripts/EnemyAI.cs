@@ -46,14 +46,15 @@ public class EnemyAI : MonoBehaviour
         pointFour       // patrolPointFour = 3
     }
 
-    static EnemyState enemystate = EnemyState.patrolling;       //sets the starting enemy state
-    static PatrolRounds patrolRounds = PatrolRounds.pointOne;   //sets the starting enemy patrol location
+    EnemyState enemystate = EnemyState.patrolling;       //sets the starting enemy state
+    PatrolRounds patrolRounds = PatrolRounds.pointOne;   //sets the starting enemy patrol location
     void Start()
     {
         playerAgent = GameObject.FindGameObjectWithTag("Player"); //gets the player gameobject
         patrolPoints = GameObject.FindGameObjectsWithTag("PatrolPoint"); //gets all patrol points
         enemyHomeBase = GameObject.FindGameObjectsWithTag("EnemyBase"); //gets the enemy home base
-        AssignPatrolPoints(); // assigns patrol points to relevant enums/variables.        
+        playerCollider = playerAgent.GetComponent<Collider>();       // assigns player collider to agent
+        AssignPatrolPoints(); // assigns patrol points to relevant enums/variables. 
     }
     
     void FixedUpdate()
