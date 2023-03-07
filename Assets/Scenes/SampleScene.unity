@@ -24546,7 +24546,7 @@ MonoBehaviour:
   spawnedEnemy: {fileID: 1807486663567083336, guid: c9ccf70885b9c6048a3a589e406a87fd, type: 3}
   enemyContainer: {fileID: 1271185922}
   spawnpoint: {fileID: 1271185923}
-  amtToSpawn: 50
+  amtToSpawn: 15
 --- !u!1 &1375912141
 GameObject:
   m_ObjectHideFlags: 0
