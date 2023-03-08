@@ -9,7 +9,7 @@ public class EnemyAI : MonoBehaviour
     private GameObject playerAgent;
     private Vector3 playerPOS;
     private Vector3 oldPlayerPOS;
-    private Vector3 enemyPOS;
+    public Vector3 enemyPOS;
     private float enemyToPlayerDistance;
     private float closeProximity = 5;
     private float distantProximity = 25;
@@ -28,6 +28,7 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] Material searchMaterial;
     public GameObject[] patrolPoints;
     public GameObject[] enemyHomeBase;
+    public GameObject myHomeBase;
     
     enum EnemyState
     {
@@ -38,7 +39,7 @@ public class EnemyAI : MonoBehaviour
         retreating      // retreating = 4
     }
 
-    enum PatrolRounds
+    enum PatrolPoints
     {
         pointOne,       // patrolPointOne = 0
         pointTwo,       // patrolPointTwo = 1
@@ -47,21 +48,23 @@ public class EnemyAI : MonoBehaviour
     }
 
     EnemyState enemystate = EnemyState.patrolling;       //sets the starting enemy state
-    PatrolRounds patrolRounds = PatrolRounds.pointOne;   //sets the starting enemy patrol location
+    PatrolPoints patrolRounds = PatrolPoints.pointOne;   //sets the starting enemy patrol location
+    
     void Start()
     {
+        enemyPOS = this.transform.position; //gets starting position; utilized in setting home base on initialization
         playerAgent = GameObject.FindGameObjectWithTag("Player"); //gets the player gameobject
         patrolPoints = GameObject.FindGameObjectsWithTag("PatrolPoint"); //gets all patrol points
         enemyHomeBase = GameObject.FindGameObjectsWithTag("EnemyBase"); //gets the enemy home base
         playerCollider = playerAgent.GetComponent<Collider>();       // assigns player collider to agent
         AssignPatrolPoints(); // assigns patrol points to relevant enums/variables. 
+        AssignHomeBase(); //assigns home base based on distance between enemyPOS and enemyBase locations
     }
     
     void FixedUpdate()
     {   
         GetEnemyToPlayerDistance();     // gets the distance between the enemy and the player
-        EnemyUpdate();
-        //Debug.Log("Distance to player is: " + enemyToPlayerDistance);
+        EnemyUpdate();        
     }
 
     public void EnemyUpdate()
@@ -76,7 +79,7 @@ public class EnemyAI : MonoBehaviour
         {
             case EnemyState.patrolling:
                 enemy.GetComponent<MeshRenderer>().material = patrolMaterial;   // sets the enemy material to the patrol material
-                TargetVisibleCheck();                                           // checks to see if the player is currently visible
+                IsTargetVisible();                                           // checks to see if the player is currently visible
                 if (playerVisible)                                              // if the player is within range and visible the enemy will move to chasing state
                 {
                     enemystate = EnemyState.chasing;
@@ -88,14 +91,14 @@ public class EnemyAI : MonoBehaviour
                 break;
             case EnemyState.searching:            
                 enemy.GetComponent<MeshRenderer>().material = searchMaterial;
-                TargetVisibleCheck();                                           // checks to see if it can see the player
+                IsTargetVisible();                                           // checks to see if it can see the player
                 if (playerVisible)
                 {
                     enemystate = EnemyState.chasing;
                 }
                 else if ((Vector3.Distance(enemyPOS, oldPlayerPOS) < closeProximity))// once the enemy agent arrives at the last seen position
                 {
-                    TargetVisibleCheck();
+                    IsTargetVisible();
                     if (playerVisible)
                     {   
                         enemystate = EnemyState.chasing;                        // switches to chasing if the player is visible
@@ -108,7 +111,7 @@ public class EnemyAI : MonoBehaviour
                 break;
             case EnemyState.chasing:            
                 enemy.GetComponent<MeshRenderer>().material = chaseMaterial;
-                TargetVisibleCheck();
+                IsTargetVisible();
                 if (playerVisible && enemyToPlayerDistance <= 10) 
                 {
                     enemystate = EnemyState.attacking;                    
@@ -120,7 +123,7 @@ public class EnemyAI : MonoBehaviour
                 break;
             case EnemyState.attacking:            
                 enemy.GetComponent<MeshRenderer>().material = attackMaterial;
-                TargetVisibleCheck();
+                IsTargetVisible();
                 if (enemyToPlayerDistance < closeProximity)
                 {
                     enemystate = EnemyState.retreating;
@@ -140,7 +143,7 @@ public class EnemyAI : MonoBehaviour
                 break;
             case EnemyState.retreating:            
                 enemy.GetComponent<MeshRenderer>().material = retreatMaterial;
-                if ((Vector3.Distance(enemyPOS, enemyHomeBase[0].transform.position) < closeProximity))
+                if ((Vector3.Distance(enemyPOS, myHomeBase.transform.position) < closeProximity))
                 {
                     enemystate = EnemyState.patrolling;
                 }                
@@ -157,32 +160,32 @@ public class EnemyAI : MonoBehaviour
             enemy.isStopped = false;
                 switch (patrolRounds)
                 {
-                    case PatrolRounds.pointOne:
+                    case PatrolPoints.pointOne:
                         enemy.destination = patrolPointOne.transform.position;
                         if (Vector3.Distance(enemyPOS, patrolPointOne.transform.position) < closeProximity)
                         {
-                            patrolRounds = PatrolRounds.pointTwo;
+                            patrolRounds = PatrolPoints.pointTwo;
                         }
                         break;
-                    case PatrolRounds.pointTwo:
+                    case PatrolPoints.pointTwo:
                         enemy.destination = patrolPointTwo.transform.position;
                         if (Vector3.Distance(enemyPOS, patrolPointTwo.transform.position) < closeProximity)
                         {
-                            patrolRounds = PatrolRounds.pointThree;
+                            patrolRounds = PatrolPoints.pointThree;
                         }
                         break;
-                    case PatrolRounds.pointThree:
+                    case PatrolPoints.pointThree:
                         enemy.destination = patrolPointThree.transform.position;
                         if (Vector3.Distance(enemyPOS, patrolPointThree.transform.position) < closeProximity)
                         {
-                            patrolRounds = PatrolRounds.pointFour;
+                            patrolRounds = PatrolPoints.pointFour;
                         }
                         break;
-                    case PatrolRounds.pointFour:
+                    case PatrolPoints.pointFour:
                         enemy.destination = patrolPointFour.transform.position;
                         if (Vector3.Distance(enemyPOS, patrolPointFour.transform.position) < closeProximity)
                         {
-                            patrolRounds = PatrolRounds.pointOne;
+                            patrolRounds = PatrolPoints.pointOne;
                         }
                         break;
                     default:
@@ -202,7 +205,7 @@ public class EnemyAI : MonoBehaviour
                 enemy.isStopped = true;
                 break;
             case EnemyState.retreating:
-                enemy.destination = enemyHomeBase[0].transform.position;
+                enemy.destination = myHomeBase.transform.position;
                 enemy.isStopped = false;
                 break;
             default:
@@ -217,7 +220,7 @@ public class EnemyAI : MonoBehaviour
         enemyToPlayerDistance = Vector3.Distance(enemyPOS, playerPOS);  //compares the difference between the enemy position and the player position
     }
 
-    public void TargetVisibleCheck()
+    public void IsTargetVisible()
     {        
         Ray ray = new Ray (enemyPOS, playerPOS - enemyPOS);                         //casts a ray from the enemy agent towards the player's position 
         Debug.DrawRay(enemyPOS, (playerPOS - enemyPOS) * 10);                       // visualizes the raycast for debugging
@@ -227,22 +230,22 @@ public class EnemyAI : MonoBehaviour
         if (Physics.Raycast(ray, out hitData, enemyToPlayerDistance, wallLayer))    //checks for walls between the player and the enemy
         {
             wallHit = true;
-            Debug.Log("Wall has been hit.");
+            //Debug.Log("Wall has been hit.");
         }        
         else
         {
             wallHit = false;
-            Debug.Log("wall has not been hit.");
+            //Debug.Log("wall has not been hit.");
 
             if (playerCollider.Raycast(ray, out hitData, distantProximity))         // checks for the player's visibility within "sight" range
             {
                 playerVisible = true;
-                Debug.Log("Player is visible.");
+                //Debug.Log("Player is visible.");
             }
             else
             {
                 playerVisible = false;
-                Debug.Log("Player is not visible.");
+                //Debug.Log("Player is not visible.");
             }
         }
     }
@@ -253,5 +256,17 @@ public class EnemyAI : MonoBehaviour
         patrolPointTwo = patrolPoints[1];
         patrolPointThree = patrolPoints[2];
         patrolPointFour = patrolPoints[3];
+    }
+
+    public void AssignHomeBase()
+    {        
+        for (int i = 0; i < enemyHomeBase.Length; i++)
+        {
+            if (Vector3.Distance(enemyPOS, enemyHomeBase[i].transform.position) < 20)
+            {
+                myHomeBase = enemyHomeBase[i];
+                Debug.Log("Home base assigned.");
+            }
+        }
     }
 }
